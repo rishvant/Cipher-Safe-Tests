@@ -1,4 +1,5 @@
-import nodeMailer from "nodemailer";
+import nodeMailer from 'nodemailer';
+import generatePdf from './pdfService';
 
 const sendEmail = async (options) => {
     const transporter = nodeMailer.createTransport({
@@ -17,6 +18,13 @@ const sendEmail = async (options) => {
         to: options.to,
         subject: options.subject,
         html: options.message,
+        attachments: [
+            {
+                filename: 'document.pdf',
+                content: generatePdf(),
+                encoding: 'base64',
+            }
+        ]
     };
 
     await transporter.sendMail(mailOptions);
