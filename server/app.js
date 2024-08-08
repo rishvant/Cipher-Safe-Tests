@@ -2,7 +2,7 @@ import express from 'express';
 import morgan from 'morgan';
 import path from 'path';
 import AppError from './utils/appError.js';
-import testRouter from './routes/testRoutes.js';
+import studentRouter from './routes/studentRoutes.js'
 import cors from 'cors';
 
 const app = express();
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-app.use('/test', testRouter);
+app.use('/student', studentRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Could not find ${req.originalUrl} on this Server!`, 404));
