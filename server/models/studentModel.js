@@ -43,7 +43,8 @@ const studentSchema = new mongoose.Schema({
       required: [true, "Pincode is required"],
    },
    phoneNumber: {
-      type: Number,
+      type: String,
+      validate: [validator.isMobilePhone, 'Please fill a valid email address'],
       required: [true, "Phone number is required"],
    },
    email: {
@@ -92,7 +93,12 @@ const studentSchema = new mongoose.Schema({
       type: Number,
       min: [0, 'Annual Income cannot be less than 0'],
       required: [true, "Annual family income is required"],
-   }
+   },
+   imageURL: {
+      // validate: [validator.isURL, 'String must be a URL'],
+      type: String,
+   },
+
 });
 
 studentSchema.pre('save', async function (next) {
