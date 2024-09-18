@@ -8,6 +8,7 @@ import xss from 'xss-clean';
 import AppError from './utils/appError.js';
 import studentRouter from './routes/studentRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
+import questionRouter from './routes/quesRoutes.js'
 import cors from 'cors';
 
 const app = express();
@@ -20,7 +21,6 @@ const limiter = rateLimit({
   message: 'Too many request from this IP',
 });
 
-// app.use('/api').route(limiter);
 app.use('/api', limiter);
 
 app.use(express.json());
@@ -45,6 +45,7 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.use('/api/v1/student', studentRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/question', questionRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Could not find ${req.originalUrl} on this Server!`, 404));

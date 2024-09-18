@@ -3,6 +3,8 @@ import AppError from '../utils/appError.js';
 import Admin from '../models/adminModel.js';
 import createSendToken from '../middleware/jwt.js'
 import { cookieOptions } from '../middleware/cookieOptions.js';
+import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
 
 export const registerAdmin = catchAsync(async (req, res, next) => {
    const adminBody = {
@@ -36,7 +38,6 @@ export const registerAdmin = catchAsync(async (req, res, next) => {
 
 });
 
-
 export const loginAdmin = catchAsync(async (req, res, next) => {
 
    const { adminId, password } = req.body;
@@ -64,6 +65,32 @@ export const loginAdmin = catchAsync(async (req, res, next) => {
       },
    });
 });
+
+export const protectAdmin = catchAsync(async (req, res, next) => {
+   let token;
+   if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+   ) {
+      token = req.headers.authorization.split(' ')[1];
+   }
+
+   if (!token) {
+      return next(new AppError('You are not logged in!'), 401);
+   }
+
+   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET_ADMIN);
+
+   const currentAdmin = await Admin.findById(decoded.id);
+   if (!currentAdmin) {
+      return next(
+         new AppError('Admin not found for the corresponding token!', 401)
+      );
+   }
+
+   req.admin = currentAdmin;
+   next();
+})
 
 
 
