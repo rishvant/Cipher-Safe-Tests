@@ -9,32 +9,34 @@ const generateRollNo = () => {
 }
 
 export const registerStudentForExam = catchAsync(async (req, res, next) => {
+   if (!req.file) {
+      return next(new AppError('Did not receive any image with the form data!', 400));
+   }
 
-   // if(!req.file) {
-   //    return next(new AppError('Did not receive any image with the form data!', 400));
-   // }
-   
-   // const localPathToImage = req.file.fileName;
-   // const resultUpload = uploadImageToCloudinary(localPathToImage);
+   const localPathToImage = req.file.path; // Correctly access the file path
+   const resultUpload = await uploadImageToCloudinary(localPathToImage);
 
-   // const imageURI = resultUpload.secure_url;
+   if (!resultUpload || !resultUpload.secure_url) {
+      return next(new AppError('Image upload failed!', 500));
+   }
+
+   const imageURI = resultUpload.secure_url;
+   console.log(imageURI);
+   console.log(resultUpload);
 
    let studentBody = req.body;
    studentBody.rollNo = generateRollNo();
-   // studentBody.imageURI = imageURI;
+   studentBody.imageURL = imageURI;
+   console.log(studentBody)
 
    const newStudent = await Student.create(studentBody);
 
    if (!newStudent) {
-      return next(new AppError('Could not create user!'));
+      return next(new AppError('Could not create user!', 500));
    }
-
-   //Add a payment middleware here
-
-   //Add mail service here
 
    res.status(201).json({
       status: 'success',
       student: newStudent
-   })
+   });
 });

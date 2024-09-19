@@ -3,6 +3,6 @@ const router = express.Router();
 import { registerStudentForExam } from '../controllers/studentController.js';
 import upload from '../middleware/multer.js';
 
-router.route('/register', upload.single('image')).post(registerStudentForExam);
+router.post('/register', upload.single('image'), registerStudentForExam);
 
 export default router;

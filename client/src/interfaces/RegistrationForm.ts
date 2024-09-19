@@ -3,9 +3,8 @@ export interface RegistrationForm {
   addressDetails: { presentAddress: string; permanentAddress: string };
   educationDetails: [
     {
-      qualification: string;
-      board: string;
-      yearOfPassing: string;
+      schoolName: string;
+      percentage: string;
     }
   ];
   parentDetails: { fatherName: string; motherName: string; contact: string };
