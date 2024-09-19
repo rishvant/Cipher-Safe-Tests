@@ -6,23 +6,28 @@ const questionSchema = new mongoose.Schema({
       required: true
    },
    option1: {
-      type: String,  
+      type: String,
       required: true
    },
    option2: {
-      type: String,  
+      type: String,
       required: true
    },
    option3: {
-      type: String,  
+      type: String,
       required: true
    },
    option4: {
-      type: String, 
+      type: String,
       required: true
    },
    correctOption: {
-      type: String, 
+      type: String,
+      required: true
+   },
+   subject: {
+      type: String,
+      enum: ['physics', 'chemistry', 'mathematics'],
       required: true
    },
    createdBy: {

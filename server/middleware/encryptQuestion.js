@@ -13,7 +13,7 @@ const encryptText = (text, key, iv) => {
    return encrypted;
 };
 
-const encrypt = (question, key) => {
+const encrypt = (question, key, next) => {
    const iv = Buffer.from(process.env.IV_HASH, 'hex');
    if (iv.length !== 16) {
       return (next(new AppError('Invalid IV length. Expected 16 bytes.', 400)));
