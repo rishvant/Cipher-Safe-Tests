@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import AppError from '../utils/appError.js';
-import { subscribe } from 'diagnostics_channel';
 
 const decryptText = (text, key, iv) => {
    const decipher = crypto.createDecipheriv(

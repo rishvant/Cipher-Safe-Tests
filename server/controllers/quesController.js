@@ -4,6 +4,10 @@ import encrypt from '../middleware/encryptQuestion.js';
 import decrypt from '../middleware/decryptQuestion.js';
 import Question from '../models/questionModel.js';
 import { recoverKey } from '../middleware/shamirs.js';
+import client from '../services/redis.js';
+import nacl from "tweetnacl";
+import naclUtil from 'tweetnacl-util';
+const { decodeUTF8 } = naclUtil;
 
 //14444890a8d8abf9af6f7f1ff45ce719881c1de6b87a21c0e2e3d68c5813fd5b - hashingkey
 export const uploadQuestion = catchAsync(async (req, res, next) => {
@@ -80,3 +84,32 @@ export const retrieveQuestions = catchAsync(async (req, res, next) => {
       questions: [data]
    });
 })
+
+export const postSolution = (catchAsync(async (req, res, next) => {
+
+   const submittedOption = req.body.solution;
+   const messageBytes = decodeUTF8(submittedOption);
+
+   const signature = nacl.sign.detached(messageBytes, Buffer.from(req.body.secretKey, 'base64'));
+
+   const data = {
+      studentId: req.student.id,
+      questionId: req.questionId,
+      signedMessage: {
+         submittedOption,
+         signature,
+      },
+      time: new Date()
+   }
+
+   const submission = await client.lPush("submissions", JSON.stringify(data));
+
+   if (!submission) {
+      return (next(new AppError('Could not submit data to the queue', 500)));
+   }
+
+   res.status(200).json({
+      status: 'success',
+      data,
+   })
+}))

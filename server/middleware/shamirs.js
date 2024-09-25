@@ -1,5 +1,4 @@
 import AppError from "../utils/appError.js";
-import catchAsync from "../utils/catchAsync.js";
 import shamir from 'shamirs-secret-sharing';
 
 export const recoverKey = (shares) => {
