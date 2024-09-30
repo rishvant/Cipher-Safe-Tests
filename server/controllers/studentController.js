@@ -21,8 +21,8 @@ export const registerStudentForExam = catchAsync(async (req, res, next) => {
    }
 
    const imageURI = resultUpload.secure_url;
-   // console.log(imageURI);
-   // console.log(resultUpload);
+   console.log(imageURI);
+   console.log(resultUpload);
 
    let studentBody = req.body;
    studentBody.rollNo = generateRollNo();

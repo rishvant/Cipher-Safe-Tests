@@ -7,6 +7,6 @@ router.route('/register').post(registerAdmin);
 router.route('/login').post(loginAdmin);
 
 router.route('/generate-shares').post(protectAdmin, generateShamirSecrets);
-router.patch('/generate-keys', generateKeys);
+router.post('/generate-keys', generateKeys);
 
 export default router;

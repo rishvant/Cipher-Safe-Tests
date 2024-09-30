@@ -90,10 +90,13 @@ export const postSolution = (catchAsync(async (req, res, next) => {
    const submittedOption = req.body.solution;
    const messageBytes = decodeUTF8(submittedOption);
 
-   const signature = nacl.sign.detached(messageBytes, Buffer.from(req.body.secretKey, 'base64'));
+   const pvtKeyArray = new Uint8Array(Buffer.from(req.body.secretKey, 'base64'));
+   // console.log(pvtKeyArray);
+
+   const signature = nacl.sign.detached(messageBytes, pvtKeyArray);
 
    const data = {
-      studentId: req.student.id,
+      studentId: req.student.rollNo,
       questionId: req.questionId,
       signedMessage: {
          submittedOption,
@@ -103,6 +106,7 @@ export const postSolution = (catchAsync(async (req, res, next) => {
    }
 
    const submission = await client.lPush("submissions", JSON.stringify(data));
+   console.log(submission);
 
    if (!submission) {
       return (next(new AppError('Could not submit data to the queue', 500)));

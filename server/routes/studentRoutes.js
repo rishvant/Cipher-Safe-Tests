@@ -9,6 +9,6 @@ router.post('/register', upload.single('image'), registerStudentForExam);
 router.post('/login', loginStudent);
 
 router.use(protectStudent);
-router.route('/post-solution').post(protectStudent, postSolution);
+router.route('/post-solution').post(postSolution);
 
 export default router;

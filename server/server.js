@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: './config.env' });
 
 import './services/db.js';
+import './services/workerDB.js';
 
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION!');

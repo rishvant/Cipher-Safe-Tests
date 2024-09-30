@@ -1,8 +1,9 @@
-import Student from "../models/studentModel.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
 import shamir from 'shamirs-secret-sharing';
 import { Keypair } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
+import Key from "../models/workers/keyModel.js";
 
 const generateKeyPair = () => {
    const keypair = Keypair.generate();
@@ -31,24 +32,30 @@ export const generateShamirSecrets = catchAsync(async (req, res, next) => {
 })
 
 export const generateKeys = catchAsync(async (req, res, next) => {
-
    const { secretKey, publicKey } = generateKeyPair();
+   // console.log(secretKey);
+   
+   // console.log(publicKey);
+   // console.log(publicKey.toBase58());
 
-   const student = await Student.findOneAndUpdate(
-      { rollNo: req.body.rollNo },
-      { publicKey: publicKey },
-      { runValidators: true }
-   );
+   // const a = new PublicKey(publicKey.toBase58());
+   // console.log(a);
 
-   if (!student) {
-      return (next(new AppError('Could not generate public-secret keypair!', 500)));
+   const key = new Key({
+      rollNo: req.body.rollNo,
+      publicKey: publicKey.toBase58()  
+   });
+
+   const keyPair = await key.save();
+   if (!keyPair) {
+      return next(new AppError('Could not generate public-secret keypair!', 500));
    }
 
    res.status(200).json({
       status: 'success',
       data: {
-         secret: secretKey,
-         public: publicKey
+         secret: secretKey,           
+         public: publicKey.toBase58()  
       }
-   })
-})
+   });
+});

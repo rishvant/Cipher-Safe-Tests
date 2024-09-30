@@ -98,10 +98,10 @@ const studentSchema = new mongoose.Schema({
       // validate: [validator.isURL, 'String must be a URL'],
       type: String,
    },
-   publicKey: {
-      type: String,
-      default: ""
-   }
+   // publicKey: {
+   //    type: String,
+   //    default: ""
+   // }
 });
 
 studentSchema.pre('save', async function (next) {
