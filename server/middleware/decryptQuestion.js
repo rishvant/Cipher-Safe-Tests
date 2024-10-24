@@ -33,6 +33,7 @@ const decrypt = (question, key, next) => {
    };
 
    return {
+      id: question._id,
       text: decrypted.text,
       option1: decrypted.option1,
       option2: decrypted.option2,

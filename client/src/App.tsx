@@ -4,14 +4,17 @@ import RegistrationPage from "./pages/Registration";
 import Navbar from "./components/Navbar";
 import QuestionExamPage from "./pages/Questions";
 import Footer from "./components/Footer";
+import Login from "./pages/Login";
 
 function App() {
+  const token = localStorage.getItem("token");
   return (
     <Router>
-      <Navbar />
+      {!token && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/registration" element={<RegistrationPage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/questions" element={<QuestionExamPage />} />
       </Routes>
       <Footer />

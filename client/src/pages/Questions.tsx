@@ -1,94 +1,96 @@
-// QuestionExamPage.tsx
-
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getQuestions } from "../services/questionService";
 
-// Dummy types for the question structure
 interface Option {
   value: string;
   label: string;
 }
 
 interface Question {
-  id: string;
   text: string;
   options: Option[];
 }
 
-const dummyQuestions: Question[] = [
-  {
-    id: "q1",
-    text: "What is the capital of France?",
-    options: [
-      { value: "paris", label: "Paris" },
-      { value: "london", label: "London" },
-      { value: "berlin", label: "Berlin" },
-      { value: "madrid", label: "Madrid" },
-    ],
-  },
-  {
-    id: "q2",
-    text: "Which is the largest planet in our solar system?",
-    options: [
-      { value: "earth", label: "Earth" },
-      { value: "jupiter", label: "Jupiter" },
-      { value: "mars", label: "Mars" },
-      { value: "venus", label: "Venus" },
-    ],
-  },
-  {
-    id: "q3",
-    text: 'Who wrote "To Kill a Mockingbird"?',
-    options: [
-      { value: "harper_lee", label: "Harper Lee" },
-      { value: "mark_twain", label: "Mark Twain" },
-      { value: "ernest_hemingway", label: "Ernest Hemingway" },
-      { value: "jane_austen", label: "Jane Austen" },
-    ],
-  },
-];
-
-type QuestionStatus = "answered" | "unanswered" | "markedForReview";
-
 const QuestionExamPage: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
-  const [questionStatuses, setQuestionStatuses] = useState<QuestionStatus[]>(
-    new Array(dummyQuestions.length).fill("unanswered")
-  );
-  const [selectedAnswers, setSelectedAnswers] = useState<(Option | null)[]>(
-    new Array(dummyQuestions.length).fill(null)
-  ); // New state to store answers
+  const [questionStatuses, setQuestionStatuses] = useState<string[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<(Option | null)[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [timeLeft, setTimeLeft] = useState(2700);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // When the question changes, set the selected option from the stored answers
+    if (!localStorage.getItem("token")) {
+      navigate("/");
+    }
+    fetchQuestions();
+  }, []);
+
+  const fetchQuestions = async () => {
+    try {
+      const response = await getQuestions();
+      const fetchedQuestions: Question[] = [];
+      console.log(response.data.questions[0]);
+
+      const subjectsData = response.data.questions[0];
+
+      // Flatten the received questions into a usable format
+      for (const subject in subjectsData) {
+        const questionsArray = subjectsData[subject]; // Access the array for each subject
+
+        // Ensure it's an array before using forEach
+        if (Array.isArray(questionsArray)) {
+          questionsArray.forEach((q: any) => {
+            const options: Option[] = [
+              { value: q.option1, label: q.option1 },
+              { value: q.option2, label: q.option2 },
+              { value: q.option3, label: q.option3 },
+              { value: q.option4, label: q.option4 },
+            ];
+            fetchedQuestions.push({ text: q.text, options });
+          });
+        } else {
+          console.error(
+            `Expected an array for ${subject}, but got:`,
+            questionsArray
+          );
+        }
+      }
+
+      setQuestions(fetchedQuestions);
+      setQuestionStatuses(
+        new Array(fetchedQuestions.length).fill("unanswered")
+      );
+      setSelectedAnswers(new Array(fetchedQuestions.length).fill(null));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
     setSelectedOption(selectedAnswers[currentQuestionIndex]);
   }, [currentQuestionIndex, selectedAnswers]);
 
   const handleOptionChange = (option: Option) => {
     setSelectedOption(option);
-
-    // Store the selected option for the current question
     const updatedAnswers = [...selectedAnswers];
     updatedAnswers[currentQuestionIndex] = option;
     setSelectedAnswers(updatedAnswers);
   };
 
-  const handleSubmit = (status: QuestionStatus = "answered") => {
+  const handleSubmit = (status: string = "answered") => {
     const updatedStatuses = [...questionStatuses];
-
-    // Only mark as answered if an option is selected
     if (selectedOption !== null && status === "answered") {
       updatedStatuses[currentQuestionIndex] = "answered";
     } else if (status === "markedForReview") {
       updatedStatuses[currentQuestionIndex] = "markedForReview";
     }
-
     setQuestionStatuses(updatedStatuses);
 
-    // Move to the next question automatically after answering
-    if (currentQuestionIndex < dummyQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     }
   };
@@ -112,7 +114,6 @@ const QuestionExamPage: React.FC = () => {
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -139,16 +140,15 @@ const QuestionExamPage: React.FC = () => {
             <div className="flex justify-end mt-4">
               <button
                 className="px-4 py-2 mr-2 text-white bg-gray-500 rounded hover:bg-gray-600"
-                onClick={() => setIsModalOpen(false)} // Close modal
+                onClick={() => setIsModalOpen(false)}
               >
                 Cancel
               </button>
               <button
                 className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
                 onClick={() => {
-                  // Add the logic to submit the exam
                   setIsModalOpen(false);
-                  // Call the submit function here
+                  // Logic to submit the exam
                 }}
               >
                 Submit
@@ -158,51 +158,45 @@ const QuestionExamPage: React.FC = () => {
         </div>
       )}
 
-      <div className="min-h-screen flex bg-gray-50 pt-20">
-        {/* Main content */}
+      <div className="min-h-screen flex bg-gray-50">
         <div className="w-full p-6 bg-white rounded-lg shadow-md">
-          {/* Timer */}
           <div className="flex justify-between mb-4">
             <div className="text-lg font-bold">
               Exam Timer: {formatTime(timeLeft)}
             </div>
             <div className="text-lg">
-              Question {currentQuestionIndex + 1}/{dummyQuestions.length}
+              Question {currentQuestionIndex + 1}/{questions.length}
             </div>
           </div>
 
-          {/* Question Area */}
           <div className="mb-6">
             <h3 className="text-xl font-bold">
-              {dummyQuestions[currentQuestionIndex].text}
+              {questions[currentQuestionIndex]?.text}
             </h3>
             <div className="grid grid-cols-2 gap-4 mt-4">
-              {dummyQuestions[currentQuestionIndex].options.map(
-                (option, index) => (
-                  <label
-                    key={index}
-                    className={`block p-4 border rounded-lg cursor-pointer ${
-                      selectedOption === option
-                        ? "border-blue-500"
-                        : "border-gray-300"
-                    } hover:bg-gray-100`}
-                  >
-                    <input
-                      type="radio"
-                      name={`option-${currentQuestionIndex}`}
-                      className="mr-2"
-                      value={option.value}
-                      onChange={() => handleOptionChange(option)}
-                      checked={selectedOption?.value === option.value}
-                    />
-                    {option.label}
-                  </label>
-                )
-              )}
+              {questions[currentQuestionIndex]?.options.map((option, index) => (
+                <label
+                  key={index}
+                  className={`block p-4 border rounded-lg cursor-pointer ${
+                    selectedOption === option
+                      ? "border-blue-500"
+                      : "border-gray-300"
+                  } hover:bg-gray-100`}
+                >
+                  <input
+                    type="radio"
+                    name={`option-${currentQuestionIndex}`}
+                    className="mr-2"
+                    value={option.value}
+                    onChange={() => handleOptionChange(option)}
+                    checked={selectedOption?.value === option.value}
+                  />
+                  {option.label}
+                </label>
+              ))}
             </div>
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between mt-6">
             <button
               className={`px-6 py-2 font-bold text-white bg-gray-400 rounded ${
@@ -230,7 +224,7 @@ const QuestionExamPage: React.FC = () => {
                 className="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600"
                 onClick={() => handleSubmit()}
               >
-                {currentQuestionIndex === dummyQuestions.length - 1
+                {currentQuestionIndex === questions.length - 1
                   ? "Submit Exam"
                   : "Next"}
               </button>
@@ -238,12 +232,9 @@ const QuestionExamPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className="w-1/3 p-4 bg-gray-100 shadow-md flex flex-col items-between justify-between">
           <div>
             <div className="mb-4 text-center font-bold">Question Summary</div>
-
-            {/* Status Counts */}
             <div className="mb-4">
               <div className="flex justify-between mb-2">
                 <span>Answered:</span>
@@ -253,15 +244,14 @@ const QuestionExamPage: React.FC = () => {
                 <span>Unanswered:</span>
                 <span>{getUnansweredCount()}</span>
               </div>
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-between mb-2">
                 <span>Marked for Review:</span>
                 <span>{getMarkedForReviewCount()}</span>
               </div>
             </div>
 
-            {/* Question Matrix */}
             <div className="grid grid-cols-5 gap-2">
-              {dummyQuestions.map((_, index) => (
+              {questions.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => handleQuestionClick(index)}
@@ -284,8 +274,8 @@ const QuestionExamPage: React.FC = () => {
 
           <div className="mt-6">
             <button
-              className="w-full px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-600"
-              onClick={() => setIsModalOpen(true)} // Open the modal when clicked
+              className="w-full px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+              onClick={() => setIsModalOpen(true)}
             >
               Submit Exam
             </button>

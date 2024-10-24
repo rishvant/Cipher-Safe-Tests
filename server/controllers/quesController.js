@@ -97,7 +97,7 @@ export const postSolution = (catchAsync(async (req, res, next) => {
 
    const data = {
       studentId: req.student.rollNo,
-      questionId: req.questionId,
+      questionId: req.body.questionId,
       signedMessage: {
          submittedOption,
          signature,
