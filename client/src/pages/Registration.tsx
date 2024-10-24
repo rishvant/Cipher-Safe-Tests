@@ -69,7 +69,7 @@ const Registration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 bg-gradient-to-b from-indigo-100 to-blue-100 p-8">
+    <div className="min-h-screen pt-20 md:pt-28 bg-gradient-to-b from-indigo-100 to-blue-100 p-8">
       <h1 className="text-4xl font-bold text-center mb-12 text-indigo-900">
         Exam Registration Form
       </h1>

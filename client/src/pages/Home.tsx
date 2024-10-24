@@ -1,7 +1,15 @@
+import FAQ from "../components/Faqs";
+import Features from "../components/Features";
+import HeroSection from "../components/Hero";
+
 const Home = () => {
-    return(
-        <h1 className="font-bold text-xl">Home</h1>
-    )
-}
+  return (
+    <>
+      <HeroSection />
+      <Features />
+      <FAQ />
+    </>
+  );
+};
 
 export default Home;

@@ -1,6 +1,6 @@
-// components/Navbar.tsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { RiSecurePaymentLine } from "react-icons/ri";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -9,11 +9,11 @@ const Navbar: React.FC = () => {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-blue-600 text-white shadow-md z-50">
+    <nav className="fixed top-0 md:top-5 left-0 md:right-0 md:mx-auto md:w-11/12 w-full bg-blue-600 md:bg-opacity-70 md:backdrop-blur-lg text-white shadow-md z-50 md:rounded-lg">
       <div className="container mx-auto flex items-center justify-between p-4">
         <div className="flex items-center">
-          <img src="/path/to/logo.png" alt="Logo" className="h-8" />
-          <span className="ml-3 text-xl font-bold">ExamPortal</span>
+          <RiSecurePaymentLine className="text-[2rem]" />
+          <span className="ml-3 text-xl font-bold">Cipher Safe Tests</span>
         </div>
         {/* Hamburger Menu for Mobile */}
         <div className="md:hidden">
@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
         <div className="absolute top-0 left-0 w-full p-4">
           <button
             onClick={closeMenu}
-            className="text-white focus:outline-none absolute top-4 right-4"
+            className="text-black focus:outline-none absolute top-4 right-4"
           >
             <svg
               className="w-6 h-6"
