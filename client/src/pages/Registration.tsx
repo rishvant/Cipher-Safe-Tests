@@ -10,34 +10,49 @@ import {
   FaPlusCircle,
   FaTrashAlt,
 } from "react-icons/fa";
+import { FaLock } from "react-icons/fa6";
+import toast from "react-hot-toast";
+import { studentRegister } from "../services/authService";
+import { isAxiosError } from "axios";
 
 const Registration: React.FC = () => {
   const [formData, setFormData] = useState<RegistrationForm>({
-    personalDetails: { name: "", dob: "", gender: "" },
-    addressDetails: { presentAddress: "", permanentAddress: "" },
+    candidateName: "",
+    fathersName: "",
+    mothersName: "",
+    dateOfBirth: "",
+    gender: "",
+    address: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confpassword: "",
+    image: null,
     educationDetails: [{ qualification: "", board: "", yearOfPassing: "" }],
-    parentDetails: { fatherName: "", motherName: "", contact: "" },
   });
 
   // handle input change
   const handleChange = (
-    section: string,
-    field: string,
-    value: string,
+    field: keyof RegistrationForm | "qualification" | "board" | "yearOfPassing",
+    value: string | File,
     index?: number
   ) => {
-    if (section === "educationDetails" && index !== undefined) {
-      const newEducationDetails: any = [...formData.educationDetails];
-      newEducationDetails[index][field] = value;
-      setFormData((prev: any) => ({
-        ...prev,
-        educationDetails: newEducationDetails,
-      }));
-    } else {
-      setFormData((prev: any) => ({
-        ...prev,
-        [section]: { ...prev[section], [field]: value },
-      }));
+    if (field === "image" && value instanceof File) {
+      setFormData({ ...formData, image: value });
+    } else if (
+      index !== undefined &&
+      (field === "qualification" ||
+        field === "board" ||
+        field === "yearOfPassing")
+    ) {
+      const updatedEducationDetails = [...formData.educationDetails];
+      updatedEducationDetails[index] = {
+        ...updatedEducationDetails[index],
+        [field]: value,
+      };
+      setFormData({ ...formData, educationDetails: updatedEducationDetails });
+    } else if (field in formData) {
+      setFormData({ ...formData, [field]: value });
     }
   };
 
@@ -63,9 +78,70 @@ const Registration: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.password !== formData.confpassword) {
+      toast.error("Password do not match!");
+      return;
+    }
+    try {
+      const response = await studentRegister(formData);
+      console.log(response);
+      if (response.status === 201) {
+        toast.success("Registration successful!");
+        setFormData({
+          candidateName: "",
+          fathersName: "",
+          mothersName: "",
+          dateOfBirth: "",
+          gender: "",
+          address: "",
+          phoneNumber: "",
+          email: "",
+          password: "",
+          confpassword: "",
+          image: null,
+          educationDetails: [
+            { qualification: "", board: "", yearOfPassing: "" },
+          ],
+        });
+      }
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        const { response } = err;
+        if (response) {
+          const { status, data } = response;
+          if (status === 400) {
+            toast.error(
+              data.message || "Bad Request. Please check your input."
+            );
+          } else if (status === 500) {
+            toast.error("Internal Server Error. Please try again later.");
+          } else {
+            toast.error(data.message || "An unexpected error occurred.");
+          }
+        } else {
+          toast.error(
+            "No response from the server. Please check your network connection."
+          );
+        }
+      } else {
+        toast.error(
+          "Error: " + (err instanceof Error ? err.message : "Unknown error")
+        );
+      }
+    }
     console.log("Form Submitted:", formData);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        image: file,
+      }));
+    }
   };
 
   return (
@@ -85,14 +161,12 @@ const Registration: React.FC = () => {
                 Full Name
               </label>
               <input
-                id="name"
+                id="candidateName"
                 type="text"
                 placeholder="Full Name"
                 className="input"
-                value={formData.personalDetails.name}
-                onChange={(e) =>
-                  handleChange("personalDetails", "name", e.target.value)
-                }
+                value={formData.candidateName}
+                onChange={(e) => handleChange("candidateName", e.target.value)}
                 required
               />
             </div>
@@ -101,13 +175,11 @@ const Registration: React.FC = () => {
                 Date of Birth
               </label>
               <input
-                id="dob"
+                id="dateOfBirth"
                 type="date"
                 className="input"
-                value={formData.personalDetails.dob}
-                onChange={(e) =>
-                  handleChange("personalDetails", "dob", e.target.value)
-                }
+                value={formData.dateOfBirth}
+                onChange={(e) => handleChange("dateOfBirth", e.target.value)}
                 required
               />
             </div>
@@ -118,10 +190,8 @@ const Registration: React.FC = () => {
               <select
                 id="gender"
                 className="input"
-                value={formData.personalDetails.gender}
-                onChange={(e) =>
-                  handleChange("personalDetails", "gender", e.target.value)
-                }
+                value={formData.gender}
+                onChange={(e) => handleChange("gender", e.target.value)}
                 required
               >
                 <option value="">Select Gender</option>
@@ -129,6 +199,50 @@ const Registration: React.FC = () => {
                 <option value="female">Female</option>
                 <option value="other">Other</option>
               </select>
+            </div>
+            <div className="flex flex-col">
+              <label
+                htmlFor="phoneNumber"
+                className="text-sm text-gray-600 mb-2"
+              >
+                Phone Number
+              </label>
+              <input
+                id="phoneNumber"
+                type="text"
+                placeholder="Phone Number"
+                className="input"
+                value={formData.phoneNumber}
+                onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="email" className="text-sm text-gray-600 mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Email"
+                className="input"
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="photo" className="text-sm text-gray-600 mb-2">
+                Photo
+              </label>
+              <input
+                id="photo"
+                type="file"
+                className="input"
+                accept="image/*"
+                onChange={handleImageChange}
+                required
+              />
             </div>
           </div>
         </div>
@@ -144,44 +258,15 @@ const Registration: React.FC = () => {
                 htmlFor="presentAddress"
                 className="text-sm text-gray-600 mb-2"
               >
-                Present Address
-              </label>
-              <input
-                id="presentAddress"
-                type="text"
-                className="input"
-                placeholder="Present Address"
-                value={formData.addressDetails.presentAddress}
-                onChange={(e) =>
-                  handleChange(
-                    "addressDetails",
-                    "presentAddress",
-                    e.target.value
-                  )
-                }
-                required
-              />
-            </div>
-            <div className="flex flex-col">
-              <label
-                htmlFor="permanentAddress"
-                className="text-sm text-gray-600 mb-2"
-              >
                 Permanent Address
               </label>
               <input
-                id="permanentAddress"
+                id="address"
                 type="text"
                 className="input"
-                placeholder="Permanent Address"
-                value={formData.addressDetails.permanentAddress}
-                onChange={(e) =>
-                  handleChange(
-                    "addressDetails",
-                    "permanentAddress",
-                    e.target.value
-                  )
-                }
+                placeholder="Present Address"
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
                 required
               />
             </div>
@@ -211,12 +296,7 @@ const Registration: React.FC = () => {
                     placeholder="Qualification"
                     value={education.qualification}
                     onChange={(e) =>
-                      handleChange(
-                        "educationDetails",
-                        "qualification",
-                        e.target.value,
-                        index
-                      )
+                      handleChange("qualification", e.target.value, index)
                     }
                     required
                   />
@@ -235,12 +315,7 @@ const Registration: React.FC = () => {
                     placeholder="Board"
                     value={education.board}
                     onChange={(e) =>
-                      handleChange(
-                        "educationDetails",
-                        "board",
-                        e.target.value,
-                        index
-                      )
+                      handleChange("board", e.target.value, index)
                     }
                     required
                   />
@@ -259,12 +334,7 @@ const Registration: React.FC = () => {
                     placeholder="Year of Passing"
                     value={education.yearOfPassing}
                     onChange={(e) =>
-                      handleChange(
-                        "educationDetails",
-                        "yearOfPassing",
-                        e.target.value,
-                        index
-                      )
+                      handleChange("yearOfPassing", e.target.value, index)
                     }
                     required
                   />
@@ -298,7 +368,7 @@ const Registration: React.FC = () => {
           <h2 className="text-2xl font-semibold mb-6 text-gray-700 flex items-center gap-2">
             <FaUserFriends className="text-pink-500" /> Parent Details
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col">
               <label
                 htmlFor="fatherName"
@@ -307,14 +377,12 @@ const Registration: React.FC = () => {
                 Father's Name
               </label>
               <input
-                id="fatherName"
+                id="fathersName"
                 type="text"
                 className="input"
                 placeholder="Father's Name"
-                value={formData.parentDetails.fatherName}
-                onChange={(e) =>
-                  handleChange("parentDetails", "fatherName", e.target.value)
-                }
+                value={formData.fathersName}
+                onChange={(e) => handleChange("fathersName", e.target.value)}
                 required
               />
             </div>
@@ -326,30 +394,52 @@ const Registration: React.FC = () => {
                 Mother's Name
               </label>
               <input
-                id="motherName"
+                id="mothersName"
                 type="text"
                 className="input"
                 placeholder="Mother's Name"
-                value={formData.parentDetails.motherName}
-                onChange={(e) =>
-                  handleChange("parentDetails", "motherName", e.target.value)
-                }
+                value={formData.mothersName}
+                onChange={(e) => handleChange("mothersName", e.target.value)}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Password Section */}
+        <div className="bg-white shadow-lg rounded-xl p-8 border-t-4 border-purple-500 relative">
+          <h2 className="text-2xl font-semibold mb-6 text-gray-700 flex items-center gap-2">
+            <FaLock className="text-purple-500" /> Password
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label htmlFor="password" className="text-sm text-gray-600 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                className="input"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => handleChange("password", e.target.value)}
                 required
               />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="contact" className="text-sm text-gray-600 mb-2">
-                Contact Number
+              <label
+                htmlFor="confpassword"
+                className="text-sm text-gray-600 mb-2"
+              >
+                Confirm Password
               </label>
               <input
-                id="contact"
-                type="text"
+                id="confpassword"
+                type="password"
                 className="input"
-                placeholder="Contact Number"
-                value={formData.parentDetails.contact}
-                onChange={(e) =>
-                  handleChange("parentDetails", "contact", e.target.value)
-                }
+                placeholder="Password"
+                value={formData.confpassword}
+                onChange={(e) => handleChange("confpassword", e.target.value)}
                 required
               />
             </div>

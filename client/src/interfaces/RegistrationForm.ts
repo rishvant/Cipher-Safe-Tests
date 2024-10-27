@@ -1,11 +1,18 @@
 export interface RegistrationForm {
-  personalDetails: { name: string; dob: string; gender: string };
-  addressDetails: { presentAddress: string; permanentAddress: string };
-  educationDetails: [
-    {
-      schoolName: string;
-      percentage: string;
-    }
-  ];
-  parentDetails: { fatherName: string; motherName: string; contact: string };
+  candidateName: string;
+  fathersName: string;
+  mothersName: string;
+  dateOfBirth: string;
+  gender: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+  confpassword: string;
+  educationDetails: Array<{
+    qualification: string;
+    board: string;
+    yearOfPassing: string;
+  }>;
+  image?: File | null;
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LoginForm } from "../interfaces/Login";
-import { studentLogin } from "../services/loginService";
+import { studentLogin } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {

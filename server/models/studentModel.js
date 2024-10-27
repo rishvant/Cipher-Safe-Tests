@@ -6,23 +6,23 @@ const studentSchema = new mongoose.Schema({
    candidateName: {
       type: String,
       // required: [true, "Candidate's name is required"],
-      trim: true,
-      maxlength: [20, "Candidate's name length cannot exceed 20 letters!"],
-      minlength: [2, "Candidate's name length should be at least 2 letters!"],
+      // trim: true,
+      // maxlength: [20, "Candidate's name length cannot exceed 20 letters!"],
+      // minlength: [2, "Candidate's name length should be at least 2 letters!"],
    },
    fathersName: {
       type: String,
       // required: [true, "Father's name is required"],
-      trim: true,
-      maxlength: [20, "Father's name length cannot exceed 20 letters!"],
-      minlength: [2, "Father's name length should be at least 2 letters!"],
+      // trim: true,
+      // maxlength: [20, "Father's name length cannot exceed 20 letters!"],
+      // minlength: [2, "Father's name length should be at least 2 letters!"],
    },
    mothersName: {
       type: String,
       // required: [true, "Mother's name is required"],
-      trim: true,
-      maxlength: [20, "Mother's name length cannot exceed 20 letters!"],
-      minlength: [2, "Mother's name length should be at least 2 letters!"],
+      // trim: true,
+      // maxlength: [20, "Mother's name length cannot exceed 20 letters!"],
+      // minlength: [2, "Mother's name length should be at least 2 letters!"],
    },
    rollNo: {
       type: Number,
@@ -35,11 +35,11 @@ const studentSchema = new mongoose.Schema({
    },
    gender: {
       type: String,
-      enum: ['male', 'female'],
+      enum: ['male', 'female', "other"],
       // required: [true, "Gender is required"],
    },
-   pincode: {
-      type: Number,
+   address: {
+      type: String,
       // required: [true, "Pincode is required"],
    },
    phoneNumber: {
@@ -57,43 +57,22 @@ const studentSchema = new mongoose.Schema({
    password: {
       type: String,
       // required: [true, 'Password is required'],
-      minlength: [8, 'Password must be at least 8 characters long!'],
+      // minlength: [8, 'Password must be at least 8 characters long!'],
       select: false,
    },
-   medium: {
-      type: String,
-      enum: ['english', 'hindi'],
-      // required: [true, "Medium is required"],
-   },
-   educationalDetails: {
-      class10: {
-         schoolName: {
-            type: String,
-            // required: [true, "Class 10 school name is required"],
+   educationalDetails: [
+      {
+         qualification: {
+            type: String
          },
-         percentage: {
-            type: Number,
-            min: [0, 'Percentage cannot be less than 0'],
-            // required: [true, "Class 10 percentage is required"],
-         }
-      },
-      class12: {
-         schoolName: {
-            type: String,
-            // required: [true, "Class 12 school name is required"],
+         board: {
+            type: String
          },
-         percentage: {
-            type: Number,
-            min: [0, 'Percentage cannot be less than 0'],
-            // required: [true, "Class 12 percentage is required"],
+         yearOfPassing: {
+            type: String
          }
       }
-   },
-   annualFamilyIncome: {
-      type: Number,
-      min: [0, 'Annual Income cannot be less than 0'],
-      // required: [true, "Annual family income is required"],
-   },
+   ],
    imageURL: {
       // validate: [validator.isURL, 'String must be a URL'],
       type: String,
