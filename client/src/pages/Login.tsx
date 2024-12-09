@@ -13,7 +13,6 @@ const Login: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    console.log(id);
     setForm((prevForm) => ({
       ...prevForm,
       [id]: value,
@@ -34,7 +33,11 @@ const Login: React.FC = () => {
       console.log("Login successful:", response);
       if (response.status === 200) {
         localStorage.setItem("token", response.data.token);
-        navigate("/questions");
+        localStorage.setItem(
+          "userData",
+          JSON.stringify(response.data.data.student)
+        );
+        navigate("/student/profile");
       }
     } catch (err) {
       if (err instanceof Error) {

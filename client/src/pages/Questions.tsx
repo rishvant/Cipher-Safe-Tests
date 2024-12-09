@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getQuestions } from "../services/questionService";
 
 interface Option {
@@ -20,12 +19,8 @@ const QuestionExamPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [timeLeft, setTimeLeft] = useState(2700);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/");
-    }
     fetchQuestions();
   }, []);
 
