@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getQuestions } from "../services/questionService";
+import axios from "axios";
 
 interface Option {
   value: string;
@@ -19,9 +20,52 @@ const QuestionExamPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [timeLeft, setTimeLeft] = useState(2700);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState<string>("");
+  const wsRef = useRef<WebSocket | null>(null);
+
+  const userData = localStorage.getItem("userData");
+  const user = userData ? JSON.parse(userData) : "";
 
   useEffect(() => {
     fetchQuestions();
+
+    // Initialize WebSocket connection
+    const ws = new WebSocket("http://localhost:3000");
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("WebSocket connection established.");
+      const studentId = user?.rollNo;
+      ws.send(JSON.stringify({ studentid: studentId }));
+    };
+
+    ws.onmessage = (event) => {
+      const message = event.data;
+      console.log("Message received from WebSocket:", message);
+
+      if (message === "positive") {
+        setModalMessage(
+          "Congratulations! You have received a positive result."
+        );
+        setIsResultModalOpen(true);
+      } else if (message === "negative") {
+        setModalMessage("Unfortunately, your result is negative. Keep trying!");
+        setIsResultModalOpen(true);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed.");
+    };
+
+    return () => {
+      ws.close();
+    };
   }, []);
 
   const fetchQuestions = async () => {
@@ -87,8 +131,32 @@ const QuestionExamPage: React.FC = () => {
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+
+      // Send data to WebSocket on moving to the next question
+      if (wsRef.current) {
+        wsRef.current.send(
+          JSON.stringify({
+            studentid: user?.rollNo,
+            questionIndex: currentQuestionIndex + 1,
+          })
+        );
+      }
     }
   };
+
+  // Function to send data to the REST API server
+  const sendAnswerToServer = async (data: any) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/submitAnswer",
+        data
+      );
+      console.log("Answer submitted successfully:", response.data);
+    } catch (err) {
+      console.error("Error submitting answer:", err);
+    }
+  };
+  // };
 
   const handleReviewLater = () => {
     handleSubmit("markedForReview");
@@ -147,6 +215,23 @@ const QuestionExamPage: React.FC = () => {
                 }}
               >
                 Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isResultModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h2 className="text-xl font-bold mb-4">Notification</h2>
+            <p>{modalMessage}</p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                onClick={() => setIsResultModalOpen(false)}
+              >
+                Close
               </button>
             </div>
           </div>
