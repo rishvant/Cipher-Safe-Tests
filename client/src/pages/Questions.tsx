@@ -10,10 +10,17 @@ interface Option {
 interface Question {
   text: string;
   options: Option[];
+  id: string;
 }
 
 const QuestionExamPage: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionId, setCurrentQuestionId] = useState<String | null>(
+    null
+  );
+  const [currentQuestionSol, setCurrentQuestionSol] = useState<String | null>(
+    null
+  );
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [questionStatuses, setQuestionStatuses] = useState<string[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<(Option | null)[]>([]);
@@ -79,6 +86,7 @@ const QuestionExamPage: React.FC = () => {
       // Flatten the received questions into a usable format
       for (const subject in subjectsData) {
         const questionsArray = subjectsData[subject]; // Access the array for each subject
+        console.log(questionsArray);
 
         // Ensure it's an array before using forEach
         if (Array.isArray(questionsArray)) {
@@ -89,7 +97,7 @@ const QuestionExamPage: React.FC = () => {
               { value: q.option3, label: q.option3 },
               { value: q.option4, label: q.option4 },
             ];
-            fetchedQuestions.push({ text: q.text, options });
+            fetchedQuestions.push({ text: q.text, options, id: q.id });
           });
         } else {
           console.error(
@@ -113,8 +121,10 @@ const QuestionExamPage: React.FC = () => {
     setSelectedOption(selectedAnswers[currentQuestionIndex]);
   }, [currentQuestionIndex, selectedAnswers]);
 
-  const handleOptionChange = (option: Option) => {
+  const handleOptionChange = (option: Option, id: string) => {
     setSelectedOption(option);
+    setCurrentQuestionSol(option.value);
+    setCurrentQuestionId(id);
     const updatedAnswers = [...selectedAnswers];
     updatedAnswers[currentQuestionIndex] = option;
     setSelectedAnswers(updatedAnswers);
@@ -128,6 +138,7 @@ const QuestionExamPage: React.FC = () => {
       updatedStatuses[currentQuestionIndex] = "markedForReview";
     }
     setQuestionStatuses(updatedStatuses);
+    console.log(questionStatuses);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
@@ -145,18 +156,25 @@ const QuestionExamPage: React.FC = () => {
   };
 
   // Function to send data to the REST API server
-  const sendAnswerToServer = async (data: any) => {
+  const sendAnswerToServer = async () => {
+    const token = localStorage.getItem("token");
+    const data = {
+      secretKey:
+        "6qJEqZbtVsP9vJYTCHiGnvdeqGy2oqTfD+VWgmVjPapXBmp4mH/asVw/QN1gxiGX/tiijqlak8gUGfMyStcqUA==",
+      solution: currentQuestionSol,
+      questionId: currentQuestionId,
+    };
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/submitAnswer",
-        data
+        "http://localhost:8000/api/v1/student/post-solution",
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("Answer submitted successfully:", response.data);
     } catch (err) {
       console.error("Error submitting answer:", err);
     }
   };
-  // };
 
   const handleReviewLater = () => {
     handleSubmit("markedForReview");
@@ -268,7 +286,12 @@ const QuestionExamPage: React.FC = () => {
                     name={`option-${currentQuestionIndex}`}
                     className="mr-2"
                     value={option.value}
-                    onChange={() => handleOptionChange(option)}
+                    onChange={() =>
+                      handleOptionChange(
+                        option,
+                        questions[currentQuestionIndex].id
+                      )
+                    }
                     checked={selectedOption?.value === option.value}
                   />
                   {option.label}
@@ -302,7 +325,10 @@ const QuestionExamPage: React.FC = () => {
               </button>
               <button
                 className="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600"
-                onClick={() => handleSubmit()}
+                onClick={() => {
+                  handleSubmit();
+                  sendAnswerToServer();
+                }}
               >
                 {currentQuestionIndex === questions.length - 1
                   ? "Submit Exam"
