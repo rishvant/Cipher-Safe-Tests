@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle } from "lucide-react";
+import { useState } from "react";
 
 interface ExamWarningProps {
   onAccept: () => void;
@@ -6,6 +7,17 @@ interface ExamWarningProps {
 }
 
 export default function ExamWarning({ onAccept, onCancel }: ExamWarningProps) {
+  const [secretKey, setSecretKey] = useState("");
+
+  const handleAccept = () => {
+    if (secretKey.trim() === "") {
+      alert("Please enter a secret key before starting the exam.");
+      return;
+    }
+    localStorage.setItem("encryptionSecret", secretKey);
+    onAccept();
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full p-6">
@@ -37,6 +49,23 @@ export default function ExamWarning({ onAccept, onCancel }: ExamWarningProps) {
           </p>
         </div>
 
+        <div className="mt-4">
+          <label
+            htmlFor="secretKey"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Enter Secret Key for Encryption:
+          </label>
+          <input
+            type="text"
+            id="secretKey"
+            value={secretKey}
+            onChange={(e) => setSecretKey(e.target.value)}
+            placeholder="Enter a secure key"
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
         <div className="mt-6 flex gap-4 justify-end">
           <button
             onClick={onCancel}
@@ -45,7 +74,7 @@ export default function ExamWarning({ onAccept, onCancel }: ExamWarningProps) {
             Cancel
           </button>
           <button
-            onClick={onAccept}
+            onClick={handleAccept}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             I Understand, Start Exam

@@ -17,6 +17,7 @@ export default function Navbar({ studentName, studentImage }: NavbarProps) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
+    localStorage.removeItem("encryptionSecret");
     toast.error("Logged out!");
     navigate("/");
   };

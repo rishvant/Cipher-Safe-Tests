@@ -158,9 +158,9 @@ const QuestionExamPage: React.FC = () => {
   // Function to send data to the REST API server
   const sendAnswerToServer = async () => {
     const token = localStorage.getItem("token");
+    const secretKey = localStorage.getItem("encryptionSecret");
     const data = {
-      secretKey:
-        "6qJEqZbtVsP9vJYTCHiGnvdeqGy2oqTfD+VWgmVjPapXBmp4mH/asVw/QN1gxiGX/tiijqlak8gUGfMyStcqUA==",
+      secretKey: secretKey,
       solution: currentQuestionSol,
       questionId: currentQuestionId,
     };
@@ -239,7 +239,20 @@ const QuestionExamPage: React.FC = () => {
         </div>
       )}
 
-      {isResultModalOpen && (
+      {isResultModalOpen &&
+      modalMessage ===
+        "Unfortunately, your result is negative. Keep trying!" ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-red-800 bg-opacity-75 pointer-events-auto">
+          <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
+            <h2 className="text-xl font-bold text-red-500 mb-4">Alert!</h2>
+            <p className="text-lg font-semibold text-center mb-6">
+              Your screen has been frozen.
+            </p>
+            <p>{modalMessage}</p>
+          </div>
+          <div className="fixed inset-0 bg-black bg-opacity-25 pointer-events-none"></div>
+        </div>
+      ) : (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="bg-white rounded-lg p-6 w-96">
             <h2 className="text-xl font-bold mb-4">Notification</h2>

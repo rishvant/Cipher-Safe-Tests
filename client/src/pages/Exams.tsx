@@ -6,24 +6,10 @@ import { useNavigate } from "react-router-dom";
 const availableExams = [
   {
     id: 1,
-    examTitle: "Mathematics Final Exam",
-    duration: "3 hours",
-    totalQuestions: 50,
-    subject: "Mathematics",
-  },
-  {
-    id: 2,
-    examTitle: "Physics Midterm",
-    duration: "2 hours",
-    totalQuestions: 40,
-    subject: "Physics",
-  },
-  {
-    id: 3,
-    examTitle: "Chemistry Quiz",
-    duration: "1 hour",
-    totalQuestions: 25,
-    subject: "Chemistry",
+    examTitle: "JEE Exam",
+    duration: "45 minutes",
+    totalQuestions: 5,
+    subject: "Mathematics, Physics, Chemistry",
   },
 ];
 
