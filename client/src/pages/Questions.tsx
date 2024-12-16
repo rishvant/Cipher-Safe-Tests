@@ -51,14 +51,12 @@ const QuestionExamPage: React.FC = () => {
       const message = event.data;
       console.log("Message received from WebSocket:", message);
 
-      if (message === "positive") {
-        setModalMessage(
-          "Congratulations! You have received a positive result."
-        );
-        setIsResultModalOpen(true);
-      } else if (message === "negative") {
+      if (message === "negative") {
         setModalMessage("Unfortunately, your result is negative. Keep trying!");
         setIsResultModalOpen(true);
+        localStorage.removeItem("userData");
+        localStorage.removeItem("token");
+        localStorage.removeItem("secretKey");
       }
     };
 
@@ -240,34 +238,38 @@ const QuestionExamPage: React.FC = () => {
       )}
 
       {isResultModalOpen &&
-      modalMessage ===
-        "Unfortunately, your result is negative. Keep trying!" ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-red-800 bg-opacity-75 pointer-events-auto">
-          <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
-            <h2 className="text-xl font-bold text-red-500 mb-4">Alert!</h2>
-            <p className="text-lg font-semibold text-center mb-6">
-              Your screen has been frozen.
-            </p>
-            <p>{modalMessage}</p>
+        modalMessage ===
+        "Unfortunately, your result is negative. Keep trying!" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-red-800 bg-opacity-75 pointer-events-auto">
+            <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
+              <h2 className="text-xl font-bold text-red-500 mb-4">Alert!</h2>
+              <p className="text-lg font-semibold text-center mb-6">
+                Your screen has been frozen.
+              </p>
+              <p>{modalMessage}</p>
+            </div>
+            <div className="fixed inset-0 bg-black bg-opacity-25 pointer-events-none"></div>
           </div>
-          <div className="fixed inset-0 bg-black bg-opacity-25 pointer-events-none"></div>
-        </div>
-      ) : (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h2 className="text-xl font-bold mb-4">Notification</h2>
-            <p>{modalMessage}</p>
-            <div className="flex justify-end mt-4">
-              <button
-                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-                onClick={() => setIsResultModalOpen(false)}
-              >
-                Close
-              </button>
+        )}
+
+      {isResultModalOpen &&
+        modalMessage !==
+        "Unfortunately, your result is negative. Keep trying!" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
+            <div className="bg-white rounded-lg p-6 w-96">
+              <h2 className="text-xl font-bold mb-4">Notification</h2>
+              <p>{modalMessage}</p>
+              <div className="flex justify-end mt-4">
+                <button
+                  className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                  onClick={() => setIsResultModalOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       <div className="min-h-screen flex bg-gray-50">
         <div className="w-full p-6 bg-white rounded-lg shadow-md">
@@ -288,11 +290,10 @@ const QuestionExamPage: React.FC = () => {
               {questions[currentQuestionIndex]?.options.map((option, index) => (
                 <label
                   key={index}
-                  className={`block p-4 border rounded-lg cursor-pointer ${
-                    selectedOption === option
-                      ? "border-blue-500"
-                      : "border-gray-300"
-                  } hover:bg-gray-100`}
+                  className={`block p-4 border rounded-lg cursor-pointer ${selectedOption === option
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                    } hover:bg-gray-100`}
                 >
                   <input
                     type="radio"
@@ -315,11 +316,10 @@ const QuestionExamPage: React.FC = () => {
 
           <div className="flex justify-between mt-6">
             <button
-              className={`px-6 py-2 font-bold text-white bg-gray-400 rounded ${
-                currentQuestionIndex === 0
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-gray-500"
-              }`}
+              className={`px-6 py-2 font-bold text-white bg-gray-400 rounded ${currentQuestionIndex === 0
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-500"
+                }`}
               onClick={() =>
                 setCurrentQuestionIndex((prevIndex) =>
                   Math.max(prevIndex - 1, 0)
@@ -374,16 +374,14 @@ const QuestionExamPage: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => handleQuestionClick(index)}
-                  className={`p-2 rounded ${
-                    questionStatuses[index] === "answered"
-                      ? "bg-green-500 text-white"
-                      : questionStatuses[index] === "markedForReview"
+                  className={`p-2 rounded ${questionStatuses[index] === "answered"
+                    ? "bg-green-500 text-white"
+                    : questionStatuses[index] === "markedForReview"
                       ? "bg-purple-500 text-white"
                       : "bg-gray-300 text-black"
-                  } ${
-                    currentQuestionIndex === index &&
+                    } ${currentQuestionIndex === index &&
                     "border border-2 border-black"
-                  }`}
+                    }`}
                 >
                   {index + 1}
                 </button>
